@@ -3,3 +3,9 @@ pandas
 numpy
 plotly
 openpyxl
+streamlit
+pandas
+numpy
+plotly
+openpyxl
+scipy
