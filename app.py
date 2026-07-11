@@ -74,6 +74,39 @@ def classify_emotion(score):
 
 
 df["Category"] = df["Emotion"].apply(classify_emotion)
+# ---------------------------------------------------
+# NARRATIVE CLASSIFICATION
+# ---------------------------------------------------
+
+def classify_frame(mean, overall_mean, overall_std):
+
+    if mean <= overall_mean - overall_std:
+
+        return (
+            "Strongly Negative",
+            "This actor's coverage is substantially more negative than the dataset average."
+        )
+
+    elif mean < overall_mean:
+
+        return (
+            "Moderately Negative",
+            "This actor's coverage is slightly more negative than the dataset average."
+        )
+
+    elif mean <= overall_mean + overall_std:
+
+        return (
+            "Near Average",
+            "This actor falls within the typical emotional range observed across the dataset."
+        )
+
+    else:
+
+        return (
+            "Relatively Positive",
+            "This actor's coverage is more positive than the dataset average."
+        )
 
 # ---------------------------------------------------
 # CALCULATIONS
@@ -147,17 +180,73 @@ for sheet in sheet_names:
 
     })
 ranking_df = pd.DataFrame(ranking)
+overall_mean = ranking_df["Weighted Mean"].mean()
+overall_std = ranking_df["Weighted Mean"].std()
 
-ranking_df = ranking_df.sort_values(
-    "Weighted Mean"
+def classify_frame(mean, overall_mean, overall_std):
+
+    if mean <= overall_mean - overall_std:
+
+        return (
+            "Strongly Negative",
+            "This actor is substantially more negative than the average actor."
+        )
+
+    elif mean < overall_mean:
+
+        return (
+            "Moderately Negative",
+            "This actor is slightly more negative than the dataset average."
+        )
+
+    elif mean <= overall_mean + overall_std:
+
+        return (
+            "Near Average",
+            "This actor falls within the normal emotional range of the dataset."
+        )
+
+    else:
+
+        return (
+            "Relatively Positive",
+            "This actor is more positive than most actors in the dataset."
+        )
+frame, explanation = classify_frame(
+    weighted_mean,
+    overall_mean,
+    overall_std
+)
+st.subheader("Dataset Baseline")
+
+c1, c2 = st.columns(2)
+
+c1.metric(
+    "Dataset Mean",
+    f"{overall_mean:.2f}"
 )
 
-ranking_df.reset_index(
-    drop=True,
-    inplace=True
+c2.metric(
+    "Dataset Std Dev",
+    f"{overall_std:.2f}"
 )
+ranking_df = pd.DataFrame(ranking)
 
+ranking_df = ranking_df.sort_values("Weighted Mean")
+ranking_df.reset_index(drop=True, inplace=True)
 ranking_df.index += 1
+
+# Dataset baseline
+overall_mean = ranking_df["Weighted Mean"].mean()
+overall_std = ranking_df["Weighted Mean"].std()
+
+# Narrative classification
+frame, explanation = classify_frame(
+    weighted_mean,
+    overall_mean,
+    overall_std
+)
+
 # ---------------------------------------------------
 # KPI CARDS
 # ---------------------------------------------------
@@ -465,6 +554,56 @@ small_expected = (expected < 5).sum()
 
 st.write("Expected frequencies < 5:", small_expected)
 st.divider()
+
+st.header(" Narrative Classification")
+
+st.subheader(frame)
+
+st.info(explanation)
+
+st.download_button(
+    "Download Ranking",
+    ranking_df.to_csv(index=False),
+    "actor_rankings.csv"
+)
+# ---------------------------------------------------
+# EXECUTIVE SUMMARY
+# ---------------------------------------------------
+
+st.divider()
+
+st.header("📄 Executive Summary")
+
+dataset_position = "below"
+
+if weighted_mean > overall_mean:
+    dataset_position = "above"
+
+variability = "low"
+
+if weighted_std > overall_std:
+    variability = "high"
+
+significance = "not statistically significant"
+
+if p < 0.05:
+    significance = "statistically significant"
+
+summary = f"""
+The selected actor (**{selected_actor}**) exhibits a weighted
+emotional score of **{weighted_mean:.2f}**, which is **{dataset_position}**
+the dataset average (**{overall_mean:.2f}**).
+
+The emotional distribution is characterised by **{variability} variability**
+(Standard Deviation = **{weighted_std:.2f}**), suggesting a
+**{frame.lower()}** and varied pattern of coverage.
+
+Across all analysed actors, the Chi-Square test indicates that
+differences in emotional distributions are **{significance}**
+(p < **{p:.4f}**).
+"""
+
+st.info(summary)
 
 st.markdown(
     """
