@@ -596,7 +596,7 @@ the dataset average (**{overall_mean:.2f}**).
 
 The emotional distribution is characterised by **{variability} variability**
 (Standard Deviation = **{weighted_std:.2f}**), suggesting a
-**{frame.lower()}** and pattern of coverage.
+**{frame.lower()}** pattern of coverage.
 
 Across all analysed actors, the Chi-Square test indicates that
 differences in emotional distributions are **{significance}**
