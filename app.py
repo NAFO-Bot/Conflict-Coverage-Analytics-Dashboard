@@ -10,7 +10,7 @@ from scipy.stats import chi2_contingency
 
 st.set_page_config(
     page_title="Emotion Analytics Dashboard",
-    page_icon="📊",
+    page_icon="",
     layout="wide"
 )
 
@@ -361,40 +361,6 @@ with right:
     )
 st.divider()
 
-st.header("📊 Actor Ranking")
-st.subheader("Weighted Mean Emotion by Actor")
-
-fig_rank = px.bar(
-
-    ranking_df,
-
-    x="Weighted Mean",
-
-    y="Actor",
-
-    orientation="h",
-
-    color="Weighted Mean",
-
-    text="Weighted Mean"
-
-)
-
-fig_rank.update_layout(
-
-    height=700,
-
-    yaxis=dict(categoryorder="total ascending")
-
-)
-
-st.plotly_chart(
-
-    fig_rank,
-
-    use_container_width=True
-
-)
 # ---------------------------------------------------
 # HEATMAP DATA
 # ---------------------------------------------------
